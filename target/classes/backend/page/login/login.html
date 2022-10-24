@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta content="IE=edge" http-equiv="X-UA-Compatible">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>瑞吉外卖管理端</title>
+    <link href="../../favicon.ico" rel="shortcut icon">
+    <!-- 引入样式 -->
+    <link href="../../plugins/element-ui/index.css" rel="stylesheet"/>
+    <link href="../../styles/common.css" rel="stylesheet">
+    <link href="../../styles/login.css" rel="stylesheet">
+    <link href="../../styles/icon/iconfont.css" rel="stylesheet"/>
+    <style>
+        .body {
+            min-width: 1366px;
+        }
+    </style>
+</head>
+
+<body>
+<div id="login-app" class="login" style="background-color: #009ad6">
+    <div class="login-box">
+        <img alt="" src="../../images/login/login-l.png">
+        <div class="login-form">
+            <el-form ref="loginForm" :model="loginForm" :rules="loginRules">
+                <div class="login-form-title">
+                    <img alt="" src="../../images/login/logo.png" style="width:139px;height:42px;"/>
+                </div>
+                <el-form-item prop="username">
+                    <el-input v-model="loginForm.username" auto-complete="off" maxlength="20" placeholder="账号"
+                              prefix-icon="iconfont icon-user"
+                              type="text"></el-input>
+                </el-form-item>
+                <el-form-item prop="password">
+                    <el-input v-model="loginForm.password" maxlength="20" placeholder="密码"
+                              prefix-icon="iconfont icon-lock" type="password"
+                              @keyup.enter.native="handleLogin"/>
+                </el-form-item>
+                <el-form-item style="width:100%;">
+                    <el-button :loading="loading" class="login-btn" size="medium" style="width:100%;" type="primary"
+                               @click.native.prevent="handleLogin">
+                        <span v-if="!loading">登录</span>
+                        <span v-else>登录中...</span>
+                    </el-button>
+                </el-form-item>
+            </el-form>
+        </div>
+    </div>
+</div>
+
+<!-- 开发环境版本，包含了有帮助的命令行警告 -->
+<script src="../../plugins/vue/vue.js"></script>
+<!-- 引入组件库 -->
+<script src="../../plugins/element-ui/index.js"></script>
+<!-- 引入axios -->
+<script src="../../plugins/axios/axios.min.js"></script>
+<script src="../../js/request.js"></script>
+<script src="../../js/validate.js"></script>
+<script src="../../api/login.js"></script>
+
+<script>
+    new Vue({
+        el: '#login-app',
+        data() {
+            return {
+                loginForm: {
+                    username: 'admin',
+                    password: '123456'
+                },
+                loading: false
+            }
+        },
+        computed: {
+            loginRules() {
+                //检测用户名的长度
+                const validateUsername = (rule, value, callback) => {
+                    if (value.length < 1) {
+                        callback(new Error('请输入用户名'))
+                    } else {
+                        callback()
+                    }
+                }
+                //检测密码的长度
+                const validatePassword = (rule, value, callback) => {
+                    if (value.length < 6) {
+                        callback(new Error('密码必须在6位以上'))
+                    } else {
+                        callback()
+                    }
+                }
+                return {
+                    'username': [{'validator': validateUsername, 'trigger': 'blur'}],
+                    'password': [{'validator': validatePassword, 'trigger': 'blur'}]
+                }
+            }
+        },
+        created() {
+        },
+        methods: {
+            async handleLogin() {
+                //  表单校验
+                this.$refs.loginForm.validate(async (valid) => {
+                    if (valid) {
+                        // 登录框设置为登录中
+                        this.loading = true
+                        //  进行axios post请求
+                        let res = await loginApi(this.loginForm)
+                        //  获取返回的res信息状态码进行判断
+                        if (String(res.code) === '1') {
+                            //  将用户信息存入本地
+                            localStorage.setItem('userInfo', JSON.stringify(res.data))
+                            //  浏览器跳转到index页面
+                            window.location.href = '/backend/index.html'
+                        } else {
+                            //  返回错误信息
+                            this.$message.error(res.msg)
+                            //  将登录框设置为登录
+                            this.loading = false
+                        }
+                    }
+                })
+            }
+        }
+    })
+</script>
+</body>
+
+</html>
