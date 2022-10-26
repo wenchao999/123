@@ -17,6 +17,7 @@ mybatis-plus:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
   global-config:
     db-config:
+#      id 生成策略 雪花算法
       id-type: ASSIGN_ID
 #配置文件上传的路径
 reggie:

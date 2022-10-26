@@ -14,6 +14,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -58,7 +59,7 @@ public class DishController {
         wrapper.orderByDesc(Dish::getUpdateTime);
 //        执行分页查询
         dishService.page(pageInfo, wrapper);
-//        对象拷贝
+//        对象拷贝 ignoreProperties参数意思是忽略某个参数，使其不被复制 records对于数据集合
         BeanUtils.copyProperties(pageInfo, dishDtoPage, "records");
         List<Dish> records = pageInfo.getRecords();
         List<DishDto> list = records.stream().map((item) -> {
@@ -66,16 +67,75 @@ public class DishController {
 //            将item的普通属性拷贝到dishDto
             BeanUtils.copyProperties(item, dishDto);
 //             查询id
+
             Long categoryId = item.getCategoryId();
 //            根据id查询分类对象
             Category category = categoryService.getById(categoryId);
-            String categoryName = category.getName();
-            dishDto.setCategoryName(categoryName);
+            if (category != null) {
+                String categoryName = category.getName();
+                dishDto.setCategoryName(categoryName);
+            }
             return dishDto;
         }).collect(Collectors.toList());
         dishDtoPage.setRecords(list);
         return Result.success(dishDtoPage);
 
     }
+
+    /**
+     * 根据id查询菜品信息和口味信息
+     *
+     * @param id
+     * @return
+     */
+    @GetMapping("/{id}")
+    public Result<DishDto> get(@PathVariable Long id) {
+        DishDto dishDto = dishService.getByIdWithFlavors(id);
+        return Result.success(dishDto);
+    }
+
+    /**
+     * 新增菜品
+     *
+     * @param dishDto
+     * @return
+     */
+    @PutMapping
+    public Result<String> update(@RequestBody DishDto dishDto) {
+        dishService.updateWithFlavors(dishDto);
+        return Result.success("修改菜品成功");
+    }
+
+    /**
+     * 删除/批量信息
+     * @param ids
+     * @return
+     */
+    @DeleteMapping
+    public Result<String> delete(Long[] ids) {
+        for (Long id : ids) {
+            dishService.removeById(id);
+        }
+        return Result.success("删除菜品信息成功");
+    }
+
+    /**
+     * 批量停/启售
+     * @param state 状态
+     *
+     * @param ids
+     * @return
+     */
+    @PostMapping("/status/{state}")
+    public Result<String> status(@PathVariable int state, Long[] ids){
+        System.out.println(Arrays.toString(ids) +"...........");
+        Dish dish = new Dish();
+        LambdaQueryWrapper<Dish> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.in(Dish::getId,  ids);
+        dish.setStatus(state);
+        dishService.update(dish,queryWrapper);
+        return Result.success("修改成功");
+    }
+
 
 }
