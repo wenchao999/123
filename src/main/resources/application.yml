@@ -17,9 +17,16 @@ mybatis-plus:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
   global-config:
     db-config:
-#      id 生成策略 雪花算法
+      #      id 生成策略 雪花算法
       id-type: ASSIGN_ID
 #配置文件上传的路径
 reggie:
   #路径
   path: D:\img\
+tencent:
+  msm:
+    secretId: 'AKIDCF92A9uQPHzWr23sY7UdXDj1B7pLcfT4'
+    secretKey: 'PZUK2YloHbhZJuIUVJsPo12qRp11oOlw'
+    appId: 1400756880
+    signName: 'Attention公众号'
+    templateId: 1589992

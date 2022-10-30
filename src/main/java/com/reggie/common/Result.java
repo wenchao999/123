@@ -1,6 +1,7 @@
 package com.reggie.common;
 
 import lombok.Data;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.Map;

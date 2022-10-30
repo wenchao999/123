@@ -4,11 +4,14 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.reggie.common.Result;
 import com.reggie.dto.DishDto;
+import com.reggie.dto.SetMealDto;
 import com.reggie.pojo.Category;
 import com.reggie.pojo.Dish;
+import com.reggie.pojo.SetMealDish;
 import com.reggie.service.CategoryService;
 import com.reggie.service.DishFlavorService;
 import com.reggie.service.DishService;
+import com.reggie.service.SetMealService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -108,11 +111,11 @@ public class DishController {
 
     /**
      * 删除/批量信息
-     * @param ids
+     *
      * @return
      */
     @DeleteMapping
-    public Result<String> delete(Long[] ids) {
+    public Result<String> delete(@RequestParam List<Long> ids) {
         for (Long id : ids) {
             dishService.removeById(id);
         }
@@ -121,21 +124,46 @@ public class DishController {
 
     /**
      * 批量停/启售
-     * @param state 状态
      *
+     * @param state 状态
      * @param ids
      * @return
      */
     @PostMapping("/status/{state}")
-    public Result<String> status(@PathVariable int state, Long[] ids){
-        System.out.println(Arrays.toString(ids) +"...........");
+    public Result<String> status(@PathVariable int state, Long[] ids) {
+        System.out.println(Arrays.toString(ids) + "...........");
         Dish dish = new Dish();
         LambdaQueryWrapper<Dish> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.in(Dish::getId,  ids);
+        queryWrapper.in(Dish::getId, ids);
         dish.setStatus(state);
-        dishService.update(dish,queryWrapper);
+        dishService.update(dish, queryWrapper);
         return Result.success("修改成功");
     }
+
+    /**
+     * 根据条件查询对应的菜品数据
+     *
+     * @param dish
+     * @return
+     */
+    @GetMapping("/list")
+    public Result<List<Dish>> list(Dish dish) {
+//        构造查询条件
+        LambdaQueryWrapper<Dish> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(dish.getCategoryId() != null, Dish::getCategoryId, dish.getCategoryId());
+//       查询状态为1的
+        queryWrapper.eq(Dish::getStatus,1);
+//        添加排序条件
+        queryWrapper.orderByAsc(Dish::getSort).orderByDesc(Dish::getUpdateTime);
+        List<Dish> list = dishService.list(queryWrapper);
+        return Result.success(list);
+    }
+
+
+
+
+
+
 
 
 }

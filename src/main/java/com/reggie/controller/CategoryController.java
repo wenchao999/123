@@ -86,7 +86,7 @@ public class CategoryController {
      */
 
     @GetMapping("/list")
-    public Result<List> list(Category category) {
+    public Result<List<Category>> list(Category category) {
         LambdaQueryWrapper<Category> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(category.getType() != null, Category::getType, category.getType());
         /* 排序  顺序   时间 */
@@ -94,6 +94,4 @@ public class CategoryController {
         List<Category> list = categoryService.list(wrapper);
         return Result.success(list);
     }
-
-
 }

@@ -4,8 +4,11 @@ import com.reggie.pojo.SetMealDish;
 import lombok.Data;
 import java.util.List;
 
+/**
+ * @author NewAdmin
+ */
 @Data
-public class SetmealDto extends SetMeal {
+public class SetMealDto extends SetMeal {
 
     private List<SetMealDish> setMealDishes;
 
