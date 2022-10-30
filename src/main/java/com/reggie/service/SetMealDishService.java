@@ -7,4 +7,5 @@ import com.reggie.pojo.SetMealDish;
  * @author NewAdmin
  */
 public interface SetMealDishService extends IService<SetMealDish> {
+
 }

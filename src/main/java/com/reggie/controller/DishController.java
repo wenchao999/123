@@ -6,6 +6,7 @@ import com.reggie.common.Result;
 import com.reggie.dto.DishDto;
 import com.reggie.pojo.Category;
 import com.reggie.pojo.Dish;
+import com.reggie.pojo.DishFlavor;
 import com.reggie.service.CategoryService;
 import com.reggie.service.DishFlavorService;
 import com.reggie.service.DishService;
@@ -108,11 +109,11 @@ public class DishController {
 
     /**
      * 删除/批量信息
-     * @param ids
+     *
      * @return
      */
     @DeleteMapping
-    public Result<String> delete(Long[] ids) {
+    public Result<String> delete(@RequestParam List<Long> ids) {
         for (Long id : ids) {
             dishService.removeById(id);
         }
@@ -121,20 +122,77 @@ public class DishController {
 
     /**
      * 批量停/启售
-     * @param state 状态
      *
+     * @param state 状态
      * @param ids
      * @return
      */
     @PostMapping("/status/{state}")
-    public Result<String> status(@PathVariable int state, Long[] ids){
-        System.out.println(Arrays.toString(ids) +"...........");
+    public Result<String> status(@PathVariable int state, Long[] ids) {
+        System.out.println(Arrays.toString(ids) + "...........");
         Dish dish = new Dish();
         LambdaQueryWrapper<Dish> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.in(Dish::getId,  ids);
+        queryWrapper.in(Dish::getId, ids);
         dish.setStatus(state);
-        dishService.update(dish,queryWrapper);
+        dishService.update(dish, queryWrapper);
         return Result.success("修改成功");
+    }
+
+    /**
+     * 根据条件查询对应的菜品数据
+     * @param dish
+     * @return
+     */
+//    @GetMapping("/list")
+//    public Result<List<Dish>> list(Dish dish) {
+////        构造查询条件
+//        LambdaQueryWrapper<Dish> queryWrapper = new LambdaQueryWrapper<>();
+//        queryWrapper.eq(dish.getCategoryId() != null, Dish::getCategoryId, dish.getCategoryId());
+////       查询状态为1的
+//        queryWrapper.eq(Dish::getStatus,1);
+////        添加排序条件
+//        queryWrapper.orderByAsc(Dish::getSort).orderByDesc(Dish::getUpdateTime);
+//        List<Dish> list = dishService.list(queryWrapper);
+//        return Result.success(list);
+//    }
+
+    /**
+     * 列表展示数据
+     *
+     * @param dish
+     * @return
+     */
+    @GetMapping("/list")
+    public Result<List<DishDto>> list(Dish dish) {
+//        构造查询条件
+        LambdaQueryWrapper<Dish> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(dish.getCategoryId() != null, Dish::getCategoryId, dish.getCategoryId());
+//       查询状态为1的
+        queryWrapper.eq(Dish::getStatus, 1);
+//        添加排序条件
+        queryWrapper.orderByAsc(Dish::getSort).orderByDesc(Dish::getUpdateTime);
+        List<Dish> list = dishService.list(queryWrapper);
+        List<DishDto> dishDtoList = list.stream().map((item) -> {
+            DishDto dishDto = new DishDto();
+//            将item的普通属性拷贝到dishDto
+            BeanUtils.copyProperties(item, dishDto);
+//             查询id
+            Long categoryId = item.getCategoryId();
+//            根据id查询分类对象
+            Category category = categoryService.getById(categoryId);
+            if (category != null) {
+                String categoryName = category.getName();
+                dishDto.setCategoryName(categoryName);
+            }
+//           当前菜品的id
+            Long dishId = item.getId();
+            LambdaQueryWrapper<DishFlavor> wrapper = new LambdaQueryWrapper<>();
+            wrapper.eq(DishFlavor::getDishId, dishId);
+            List<DishFlavor> dishFlavors = dishFlavorService.list(wrapper);
+            dishDto.setFlavors(dishFlavors);
+            return dishDto;
+        }).collect(Collectors.toList());
+        return Result.success(dishDtoList);
     }
 
 
