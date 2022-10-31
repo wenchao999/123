@@ -25,8 +25,8 @@ reggie:
   path: D:\img\
 tencent:
   msm:
-    secretId: 'AKIDCF92A9uQPHzWr23sY7UdXDj1B7pLcfT4'
-    secretKey: 'PZUK2YloHbhZJuIUVJsPo12qRp11oOlw'
+    secretId: ''
+    secretKey: ''
     appId: 1400756880
-    signName: 'Attention公众号'
-    templateId: 1589992
+    signName: ''
+    templateId: 
